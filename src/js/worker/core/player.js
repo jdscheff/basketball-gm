@@ -387,7 +387,7 @@ function calcBaseChange(age: number, potentialDifference: number): number {
  * @return {Object} Updated player object.
  */
 function develop(
-    p: {born: {loc: string, year: number}, pos?: string, ratings: PlayerRatings[]},
+    p: {born: {loc: string, year: number}, pos?: string, ratings: PlayerRatings[], hofScore: number, stats: PlayerStats[]},
     years?: number = 1,
     newPlayer?: boolean = false,
     coachingRank?: number = 15.5,
@@ -1017,6 +1017,7 @@ function generate(
         valueFuzz: 0,
         valueNoPotFuzz: 0,
         valueWithContract: 0,
+        stats: []
     };
 
     setContract(p, genContract(p), false);
@@ -1065,6 +1066,22 @@ function contractSeasonsRemaining(exp: number, numGamesRemaining: number): numbe
  * @return {boolean} Hall of Fame worthy?
  */
 function madeHof(p: Player, playerStats: PlayerStats[]): boolean {
+
+        return hofScore(p, playerStats) > 100;
+
+}
+
+/**
+ * Is a player worthy of the Hall of Fame?
+ *
+ * This calculation is based on http://espn.go.com/nba/story/_/id/8736873/nba-experts-rebuild-springfield-hall-fame-espn-magazine except it uses PER-based estimates of wins added http://insider.espn.go.com/nba/hollinger/statistics (since PER is already calculated for each season) and it includes each playoff run as a separate season.
+ *
+ * @memberOf core.player
+ * @param {Object} p Player object.
+ * @return {number} Hall of Fame score
+ */
+function hofScore(p: Player, playerStats: PlayerStats[]): number {
+
     const mins = playerStats.map(ps => ps.min);
     const pers = playerStats.map(ps => ps.per);
 
@@ -1107,8 +1124,9 @@ function madeHof(p: Player, playerStats: PlayerStats[]): boolean {
     }
 
     // Final formula
-    return ewa + df > 100;
+    return ewa + df;
 }
+
 
 type ValueOptions = {
     fuzz?: boolean,
@@ -1290,7 +1308,7 @@ function retire(p: Player, playerStats: PlayerStats[], conditions: Conditions, r
     }
 
     p.tid = PLAYER.RETIRED;
-    p.retiredYear = g.season;
+    p.retiredYear = g.season;    
 
     // Add to Hall of Fame?
     if (madeHof(p, playerStats)) {
@@ -1637,6 +1655,7 @@ export default {
     release,
     skills,
     madeHof,
+    hofScore,
     updateValues,
     retire,
     name,

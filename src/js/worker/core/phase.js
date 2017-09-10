@@ -122,6 +122,7 @@ async function newPhasePreseason(conditions: Conditions) {
     for (const p of players) {
         // Update ratings
         player.addRatingsRow(p, scoutingRank);
+        p.stats = await idb.cache.playerStats.indexGetAll('playerStatsAllByPid', p.pid);
         player.develop(p, 1, false, coachingRanks[p.tid]);
 
         // Update player values after ratings changes
@@ -317,6 +318,8 @@ async function newPhaseBeforeDraft(conditions: Conditions, liveGameSim?: boolean
 
         // Get player stats, used for HOF calculation
         const playerStats = await idb.getCopies.playerStats({pid: p.pid});
+
+        p.hofScore = player.hofScore(p,playerStats);
 
         const age = g.season - p.born.year;
         const pot = p.ratings[p.ratings.length - 1].pot;
