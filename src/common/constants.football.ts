@@ -7,6 +7,7 @@ const COMPOSITE_WEIGHTS: CompositeWeights<RatingKey> = {
 		weights: [1, 0.2],
 		skill: {
 			label: "Pa",
+			description: "Accurate Passer",
 		},
 	},
 	passingDeep: {
@@ -14,6 +15,7 @@ const COMPOSITE_WEIGHTS: CompositeWeights<RatingKey> = {
 		weights: [1, 0.1, 0.2],
 		skill: {
 			label: "Pd",
+			description: "Deep Passer",
 		},
 	},
 	passingVision: {
@@ -21,6 +23,7 @@ const COMPOSITE_WEIGHTS: CompositeWeights<RatingKey> = {
 		weights: [1, 0.5],
 		skill: {
 			label: "Ps",
+			description: "Smart Passer",
 		},
 	},
 	athleticism: {
@@ -28,6 +31,7 @@ const COMPOSITE_WEIGHTS: CompositeWeights<RatingKey> = {
 		weights: [1, 1, 0.2],
 		skill: {
 			label: "A",
+			description: "Athletic",
 		},
 	},
 	rushing: {
@@ -35,6 +39,7 @@ const COMPOSITE_WEIGHTS: CompositeWeights<RatingKey> = {
 		weights: [0.5, 1, 1],
 		skill: {
 			label: "X",
+			description: "Explosive Runner",
 		},
 	},
 	catching: {
@@ -42,6 +47,7 @@ const COMPOSITE_WEIGHTS: CompositeWeights<RatingKey> = {
 		weights: [0.2, 1],
 		skill: {
 			label: "H",
+			description: "Hands",
 		},
 	},
 	gettingOpen: {
@@ -53,6 +59,7 @@ const COMPOSITE_WEIGHTS: CompositeWeights<RatingKey> = {
 		weights: [0.5, 1, 0.2, 1],
 		skill: {
 			label: "Bp",
+			description: "Pass Blocker",
 		},
 	},
 	runBlocking: {
@@ -60,6 +67,7 @@ const COMPOSITE_WEIGHTS: CompositeWeights<RatingKey> = {
 		weights: [0.5, 1, 0.4, 1],
 		skill: {
 			label: "Br",
+			description: "Run Blocker",
 		},
 	},
 	passRushing: {
@@ -67,6 +75,7 @@ const COMPOSITE_WEIGHTS: CompositeWeights<RatingKey> = {
 		weights: [1, 1, 0.5, 1, 0.25],
 		skill: {
 			label: "PR",
+			description: "Pass Rusher",
 		},
 	},
 	runStopping: {
@@ -74,6 +83,7 @@ const COMPOSITE_WEIGHTS: CompositeWeights<RatingKey> = {
 		weights: [0.5, 1, 0.5, 1, 1],
 		skill: {
 			label: "RS",
+			description: "Run Stopper",
 		},
 	},
 	passCoverage: {
@@ -81,6 +91,7 @@ const COMPOSITE_WEIGHTS: CompositeWeights<RatingKey> = {
 		weights: [0.1, 1, 1, 0.25],
 		skill: {
 			label: "L",
+			description: "Lockdown Coverage",
 		},
 	},
 	tackling: {

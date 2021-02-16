@@ -6,8 +6,12 @@ import { getCols, helpers, toWorker } from "../util";
 import { DataTable, PlayerNameLabels } from "../components";
 import type { View, ThenArg } from "../../common/types";
 import type api from "../../worker/api";
+import TradeFilter, { Filter } from "../views/TradeFilter/TradeFilter";
+import { AnimatePresence, motion } from "framer-motion";
+import FilterItem from "../../worker/core/trade/FilterItem";
+import _ from "lodash";
 
-type OfferType = ThenArg<ReturnType<typeof api["getTradingBlockOffers"]>>[0];
+type Offer = ThenArg<ReturnType<typeof api["getTradingBlockOffers"]>>[0];
 
 type OfferProps = {
 	challengeNoRatings: boolean;
@@ -18,7 +22,7 @@ type OfferProps = {
 	) => Promise<void>;
 	i: number;
 	stats: string[];
-} & OfferType;
+} & Offer;
 
 const Offer = (props: OfferProps) => {
 	const {
@@ -173,18 +177,64 @@ const pickCols = getCols("", "Draft Picks");
 pickCols[0].sortSequence = [];
 pickCols[1].width = "100%";
 
+const populateExtendedPositions = (items: string[]): string[] => {
+	let extPos = [...items].filter(pos => !["GF", "FC", "F", "G"].includes(pos));
+	if (extPos.includes("PG") || extPos.includes("SG")) extPos.push("G");
+	if (extPos.includes("PF") || extPos.includes("SF")) extPos.push("F");
+	if (extPos.includes("PF") || extPos.includes("C")) extPos.push("FC");
+	if (extPos.includes("SF") || extPos.includes("SG")) extPos.push("GF");
+	return extPos;
+};
+
 const TradingBlock = (props: View<"tradingBlock">) => {
 	const [state, setState] = useState<{
 		asking: boolean;
-		offers: OfferType[];
+		offers: Offer[];
 		pids: number[];
 		dpids: number[];
+		filters: Filter;
+		showFilters: boolean;
+		filterVerbiage: string;
 	}>({
 		asking: false,
 		offers: [],
 		pids: props.initialPid !== undefined ? [props.initialPid] : [],
 		dpids: [],
+		filters: {
+			pos: new FilterItem<string[]>([], "POS", populateExtendedPositions),
+			salaryCap: new FilterItem<string>("", "SALARY_CAP"),
+			skill: new FilterItem<string[]>([], "SKILL"),
+		},
+		showFilters: false,
+		filterVerbiage: "Filter",
 	});
+
+	const setFilters = (filters: Filter) => {
+		setState(prevState => {
+			let count = 0;
+			if (filters.pos.filterData && filters.pos.filterData.length > 0) count++;
+			if (filters.skill.filterData && filters.skill.filterData.length > 0)
+				count++;
+			if (filters.salaryCap.filterData !== "") count++;
+
+			const plurality = count > 1 ? "Filters" : "Filter";
+
+			return {
+				...prevState,
+				filters: filters,
+				filterVerbiage: count > 0 ? ` (${count} ${plurality})` : plurality,
+			};
+		});
+	};
+
+	const toggleFilterDisplay = () => {
+		setState(prevState => {
+			return {
+				...prevState,
+				showFilters: !prevState.showFilters,
+			};
+		});
+	};
 
 	const beforeOffersRef = useRef<HTMLDivElement>(null);
 
@@ -215,11 +265,17 @@ const TradingBlock = (props: View<"tradingBlock">) => {
 			offers: [],
 		}));
 
-		const offers: OfferType[] = await toWorker(
+		const offers: Offer[] = await toWorker(
 			"main",
 			"getTradingBlockOffers",
 			state.pids,
 			state.dpids,
+			Object.values(state.filters).map((filter: FilterItem<any>) => {
+				return {
+					filterFunction: filter.filterFunction,
+					filterData: filter.filterData,
+				};
+			}),
 		);
 
 		setState(prevState => ({
@@ -388,6 +444,18 @@ const TradingBlock = (props: View<"tradingBlock">) => {
 
 			<div ref={beforeOffersRef} />
 
+			<AnimatePresence>
+				{state.showFilters === true && (
+					<motion.div
+						initial={{ opacity: 0 }}
+						animate={{ opacity: 1 }}
+						exit={{ opacity: 0 }}
+					>
+						<TradeFilter setFilters={setFilters} filters={state.filters} />
+					</motion.div>
+				)}
+			</AnimatePresence>
+
 			<div className="text-center">
 				<button
 					className="btn btn-lg btn-primary"
@@ -396,6 +464,14 @@ const TradingBlock = (props: View<"tradingBlock">) => {
 				>
 					{!state.asking ? "Ask For Trade Proposals" : "Asking..."}
 				</button>
+				<a
+					onClick={toggleFilterDisplay}
+					className="btn btn-lg btn-link cursor-pointer"
+					title="Filter"
+				>
+					<span className="glyphicon glyphicon-filter align-middle"></span>{" "}
+					<span className="text-align-middle">{state.filterVerbiage}</span>
+				</a>
 			</div>
 
 			{state.offers.map((offer, i) => {

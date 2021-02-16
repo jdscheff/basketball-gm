@@ -3,7 +3,13 @@ import * as constantsBasketball from "./constants.basketball";
 import * as constantsFootball from "./constants.football";
 import * as constantsHockey from "./constants.hockey";
 
-import type { CompositeWeights, Phase, DraftType, MoodTrait } from "./types";
+import type {
+	CompositeWeights,
+	Phase,
+	DraftType,
+	MoodTrait,
+	CompositeWeight,
+} from "./types";
 
 const ACCOUNT_API_URL =
 	process.env.NODE_ENV === "development"
@@ -141,6 +147,17 @@ const POSITIONS = bySport<any[]>({
 	football: constantsFootball.POSITIONS,
 	hockey: constantsHockey.POSITIONS,
 });
+
+const SKILLS: { [key: string]: string } = Object.values(
+	bySport<CompositeWeights>({
+		basketball: constantsBasketball.COMPOSITE_WEIGHTS,
+		football: constantsFootball.COMPOSITE_WEIGHTS,
+		hockey: constantsHockey.COMPOSITE_WEIGHTS,
+	}),
+).reduce((skills: { [key: string]: string }, item: CompositeWeight) => {
+	if (item.skill) skills[item.skill.label] = item.skill.description;
+	return skills;
+}, {});
 
 const TEAM_STATS_TABLES: {
 	[key: string]: {
@@ -298,5 +315,6 @@ export {
 	TEAM_STATS_TABLES,
 	TIEBREAKERS,
 	TIME_BETWEEN_GAMES,
+	SKILLS,
 	TWITTER_HANDLE,
 };

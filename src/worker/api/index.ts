@@ -81,6 +81,9 @@ import type {
 	ScheduleGameWithoutKey,
 	Conf,
 	Div,
+	ThenArg,
+	ContractInfo,
+	DraftPick,
 	LocalStateUI,
 } from "../../common/types";
 import orderBy from "lodash/orderBy";
@@ -92,6 +95,25 @@ import {
 } from "../core/season/awards";
 import { getScore } from "../core/player/checkJerseyNumberRetirement";
 import type { NewLeagueTeam } from "../../ui/views/NewLeague/types";
+import * as filter_functions from "../core/trade/filterFunctions";
+
+export type AugmentedOffer = {
+	tid: number;
+	abbrev: string;
+	region: string;
+	name: string;
+	strategy: string;
+	won: number;
+	lost: number;
+	otl: number;
+	tied: number;
+	pids: number[];
+	dpids: number[];
+	warning: string | null | undefined;
+	payroll: number | ContractInfo[];
+	picks: DraftPick[];
+	players: Player[];
+};
 
 const acceptContractNegotiation = async (
 	pid: number,
@@ -1255,13 +1277,42 @@ const getRandomRatings = async (age: number, pos: string | undefined) => {
 	};
 };
 
-const getTradingBlockOffers = async (pids: number[], dpids: number[]) => {
+const filterOffers = (
+	offers: AugmentedOffer[],
+	filters: [{ filterFunction: string; filterData: any }],
+) => {
+	//filtering logic
+	return offers.filter(offer => {
+		let filteredPlayers = offer.players;
+		const qualifies = filters.reduce((qualifies: boolean, filter) => {
+			const command = Object.values(filter_functions).find(
+				c => c.name === filter.filterFunction,
+			);
+			if (!qualifies) return false;
+			else if (command && filter.filterData) {
+				const newRes = command.execute(
+					filteredPlayers,
+					offer,
+					filter.filterData,
+				);
+				filteredPlayers = newRes.players;
+
+				return qualifies && newRes.qualifies;
+			} else return true;
+		}, true);
+		return qualifies;
+	});
+};
+
+const getTradingBlockOffers = async (
+	pids: number[],
+	dpids: number[],
+	filters: [{ filterFunction: string; filterData: any }],
+): Promise<AugmentedOffer[]> => {
 	const getOffers = async (userPids: number[], userDpids: number[]) => {
-		// Pick 10 random teams to try (or all teams, if g.get("numActiveTeams") < 10)
 		const teams = await idb.cache.teams.getAll();
 		const tids = teams.filter(t => !t.disabled).map(t => t.tid);
 		random.shuffle(tids);
-		tids.splice(10);
 		const offers: TradeTeam[] = [];
 
 		for (const tid of tids) {
@@ -1293,10 +1344,12 @@ const getTradingBlockOffers = async (pids: number[], dpids: number[]) => {
 			}
 		}
 
-		return offers;
+		return offers.slice(0, 10);
 	};
 
-	const augmentOffers = async (offers: TradeTeam[]) => {
+	const augmentOffers = async (
+		offers: TradeTeam[],
+	): Promise<AugmentedOffer[]> => {
 		if (offers.length === 0) {
 			return [];
 		}
@@ -1350,7 +1403,6 @@ const getTradingBlockOffers = async (pids: number[], dpids: number[]) => {
 					tid,
 				});
 				picks = picks.filter(dp => offer.dpids.includes(dp.dpid));
-
 				const picks2 = picks.map(dp => {
 					return {
 						...dp,
@@ -1380,8 +1432,17 @@ const getTradingBlockOffers = async (pids: number[], dpids: number[]) => {
 		);
 	};
 
-	const offers = await getOffers(pids, dpids);
-	return augmentOffers(offers);
+	//since filters reduce the number of viable offers, try up to 10 times to get some good offers
+	let filteredOffers: AugmentedOffer[] = [];
+	let iterations = 0;
+	while (filteredOffers.length === 0 && iterations < 10) {
+		const offers = await getOffers(pids, dpids);
+		const augmentedOffers = await augmentOffers(offers);
+		filteredOffers = filterOffers(augmentedOffers, filters);
+		iterations++;
+	}
+
+	return filteredOffers;
 };
 
 const getVersionWorker = async () => {

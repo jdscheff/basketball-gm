@@ -1,4 +1,4 @@
-import type { CompositeWeights, Conf, Div } from "./types";
+import type { CompositeWeights, Conf, Div, Skill } from "./types";
 import type { RatingKey } from "./types.basketball";
 
 const COMPOSITE_WEIGHTS: CompositeWeights<RatingKey> = {
@@ -10,6 +10,7 @@ const COMPOSITE_WEIGHTS: CompositeWeights<RatingKey> = {
 		weights: [1.5, 1, 1, 1, 0.5, 0.5, 0.5, 0.5],
 		skill: {
 			label: "V",
+			description: "Volume Scorer",
 			cutoff: 0.61,
 		},
 	},
@@ -18,6 +19,7 @@ const COMPOSITE_WEIGHTS: CompositeWeights<RatingKey> = {
 		weights: [1, 1],
 		skill: {
 			label: "B",
+			description: "Ball Handler",
 			cutoff: 0.68,
 		},
 	},
@@ -26,6 +28,7 @@ const COMPOSITE_WEIGHTS: CompositeWeights<RatingKey> = {
 		weights: [0.4, 1, 0.5],
 		skill: {
 			label: "Ps",
+			description: "Passer",
 			cutoff: 0.63,
 		},
 	},
@@ -42,6 +45,7 @@ const COMPOSITE_WEIGHTS: CompositeWeights<RatingKey> = {
 		weights: [1, 0.6, 0.2, 1, 0.4],
 		skill: {
 			label: "Po",
+			description: "Post Scorer",
 			cutoff: 0.61,
 		},
 	},
@@ -54,6 +58,7 @@ const COMPOSITE_WEIGHTS: CompositeWeights<RatingKey> = {
 		weights: [0.1, 1],
 		skill: {
 			label: "3",
+			description: "Three Point Shooter",
 			cutoff: 0.59,
 		},
 	},
@@ -65,6 +70,7 @@ const COMPOSITE_WEIGHTS: CompositeWeights<RatingKey> = {
 		weights: [2, 0.1, 0.1, 2, 0.5, 0.5],
 		skill: {
 			label: "R",
+			description: "Rebounder",
 			cutoff: 0.61,
 		},
 	},
@@ -93,6 +99,7 @@ const COMPOSITE_WEIGHTS: CompositeWeights<RatingKey> = {
 		weights: [2.5, 1, 0.5, 0.5, 2],
 		skill: {
 			label: "Di",
+			description: "Interior Defender",
 			cutoff: 0.57,
 		},
 	},
@@ -101,6 +108,7 @@ const COMPOSITE_WEIGHTS: CompositeWeights<RatingKey> = {
 		weights: [0.5, 0.5, 2, 0.5, 1],
 		skill: {
 			label: "Dp",
+			description: "Perimeter Defender",
 			cutoff: 0.61,
 		},
 	},
@@ -113,6 +121,7 @@ const COMPOSITE_WEIGHTS: CompositeWeights<RatingKey> = {
 		weights: [1, 1, 1, 0.75],
 		skill: {
 			label: "A",
+			description: "Athlete",
 			cutoff: 0.63,
 		},
 	},
